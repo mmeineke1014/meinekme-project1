@@ -1,5 +1,5 @@
 class Histogram {
-    constructor(_config, _data, _dataID ){
+    constructor(_config, _data, _dataID, _color ){
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 750,
@@ -9,8 +9,7 @@ class Histogram {
 
         this.data = _data;
         this.category = _dataID;
-
-        console.log(this.category);
+        this.color = _color;
 
         this.initVis();
     }
@@ -41,7 +40,7 @@ class Histogram {
         vis.xScale = d3.scaleBand()
                             .domain(bands)
                             .range([0, vis.width])
-                            .paddingInner(0.025);
+                            .paddingInner(0.075);
 
         vis.yScale = d3.scaleLinear()
                             .domain([0, countMax + 5 ])
@@ -68,7 +67,14 @@ class Histogram {
                 .data(vis.data.histo)
             .join('rect')
                 .attr('class', 'bar')
-                .attr('fill', 'DarkOrchid')
+                .attr('fill', d => {
+                    if(vis.category == "urban_rural_status"){
+                        return "#453B52";
+                    }
+                    else{
+                        return vis.color;
+                    }
+                })
                 .attr('width', vis.xScale.bandwidth())
                 .attr('height', d => vis.height - vis.yScale(d.count))
                 .attr('y', d => vis.yScale(d.count))
@@ -93,35 +99,58 @@ class Histogram {
         let bands = [];
         let label = "";
 
-        // fill the array with labels for the groups
-        while(x < range[1]){
-            label = (x + interval).toFixed(1);
-            buckets.push(x + interval)
-            this.data.histo.push({band: label, count: 0});
-            bands.push(label);
-            x = x + interval;
+        if(this.category == "urban_rural_status"){
+            bands = ["Rural", "Suburban", "Small City", "Urban"];
+            this.data.histo.push({band: "Rural", count: 0});
+            this.data.histo.push({band: "Suburban", count: 0});
+            this.data.histo.push({band: "Small City", count: 0});
+            this.data.histo.push({band: "Urban", count: 0});
+        }
+        else{
+            // fill the array with labels for the groups
+            while(x < range[1]){
+                label = (x + interval).toFixed(1);
+                buckets.push(x + interval)
+                this.data.histo.push({band: label, count: 0});
+                bands.push(label);
+                x = x + interval;
+            }
         }
 
         console.log('Bands', bands);
 
-        this.data.objects.counties.geometries.forEach(d => {
-            x = d.properties[this.category]
-            if(x < buckets[0]){this.data.histo[0].count++;}
-            else if(x < buckets[1]){this.data.histo[1].count++;}
-            else if(x < buckets[2]){this.data.histo[2].count++;}
-            else if(x < buckets[3]){this.data.histo[3].count++;}
-            else if(x < buckets[4]){this.data.histo[4].count++;}
-            else if(x < buckets[5]){this.data.histo[5].count++;}
-            else if(x < buckets[6]){this.data.histo[6].count++;}
-            else if(x < buckets[7]){this.data.histo[7].count++;}
-            else if(x < buckets[8]){this.data.histo[8].count++;}
-            else if(x < buckets[9]){this.data.histo[9].count++;}
-            else if(x < buckets[10]){this.data.histo[10].count++;}
-            else if(x < buckets[11]){this.data.histo[11].count++;}
-            else if(x < buckets[12]){this.data.histo[12].count++;}
-            else if(x < buckets[13]){this.data.histo[13].count++;}
-            else{this.data.histo[14].count++;}
-        });
+        if(this.category == "urban_rural_status"){
+            this.data.objects.counties.geometries.forEach(d =>{
+                x = d.properties.urban_rural_status;
+                if(x == bands[0]){this.data.histo[0].count++;}
+                else if(x == bands[1]){this.data.histo[1].count++;}
+                else if(x == bands[2]){this.data.histo[2].count++;}
+                else if(x == bands[3]){this.data.histo[3].count++;}              
+            })
+        }
+        else{
+            this.data.objects.counties.geometries.forEach(d => {
+                x = d.properties[this.category]
+                if(x < buckets[0] && x >= 0){this.data.histo[0].count++;}
+                else if(x < buckets[1]){this.data.histo[1].count++;}
+                else if(x < buckets[2]){this.data.histo[2].count++;}
+                else if(x < buckets[3]){this.data.histo[3].count++;}
+                else if(x < buckets[4]){this.data.histo[4].count++;}
+                else if(x < buckets[5]){this.data.histo[5].count++;}
+                else if(x < buckets[6]){this.data.histo[6].count++;}
+                else if(x < buckets[7]){this.data.histo[7].count++;}
+                else if(x < buckets[8]){this.data.histo[8].count++;}
+                else if(x < buckets[9]){this.data.histo[9].count++;}
+                else if(x < buckets[10]){this.data.histo[10].count++;}
+                else if(x < buckets[11]){this.data.histo[11].count++;}
+                else if(x < buckets[12]){this.data.histo[12].count++;}
+                else if(x < buckets[13]){this.data.histo[13].count++;}
+                else if(x < buckets[14]){this.data.histo[14].count++; console.log(x);}
+            });
+        }
+
+        console.log('histo', this.data.histo);
+        console.log("TEST");
 
         return bands;
 

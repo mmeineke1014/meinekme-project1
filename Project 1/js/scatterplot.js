@@ -1,5 +1,5 @@
 class Scatterplot {
-    constructor(_config, _data ){
+    constructor(_config, _data, _categories ){
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 750,
@@ -8,6 +8,9 @@ class Scatterplot {
         }
 
         this.data = _data;
+        this.categories = _categories;
+
+        console.log(this.categories);
 
         this.initVis();
     }
@@ -34,24 +37,55 @@ class Scatterplot {
         //Define the graph scales
 
         //get the Max and Min values for the x and y data
-        const xMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr1);
-        const yMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr2);
-        let scaleMax = 100;
+        if(vis.categories.includes("urban_rural_status")){
+            if(vis.categories[0] == "urban_rural_status"){
+                const yMax = d3.max(vis.data.objects.counties.geometries, d => d.properties[vis.categories[1]]) * 1.075;
+                console.log("yMax", yMax);
 
-        if(xMax >= yMax){
-            scaleMax = xMax * 1.075;
+                vis.xScale = d3.scaleBand()
+                                    .domain(["Rural", "Suburban", "Small City", "Urban"])
+                                    .range([0, vis.width])
+                                    .paddingInner(0.1);
+    
+                vis.yScale = d3.scaleLinear()
+                    .domain([yMax, 0])
+                    .range([vis.height, 0]);
+
+            }
+            else{
+                const xMax = d3.max(vis.data.objects.counties.geometries, d => d.properties[vis.categories[0]]) * 1.075;
+
+                vis.xScale = d3.scaleLinear()
+                    .domain([0, xMax])
+                    .range([0, vis.width]);
+    
+                vis.yScale = d3.scaleBand()
+                                    .domain(["Rural", "Suburban", "Small City", "Urban"])
+                                    .range([0, vis.width])
+                                    .paddingInner(0.1);
+            }
         }
         else{
-            scaleMax = yMax * 1.075;
+            const xMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr1);
+            const yMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr2);            
+
+            let scaleMax = 100;
+
+            if(xMax >= yMax){
+                scaleMax = xMax * 1.075;
+            }
+            else{
+                scaleMax = yMax * 1.075;
+            }
+    
+            vis.xScale = d3.scaleLinear()
+                .domain([0, scaleMax])
+                .range([0, vis.width]);
+    
+            vis.yScale = d3.scaleLinear()
+                .domain([scaleMax, 0])
+                .range([vis.height, 0]);
         }
-
-        vis.xScale = d3.scaleLinear()
-            .domain([0, scaleMax])
-            .range([0, vis.width]);
-
-        vis.yScale = d3.scaleLinear()
-            .domain([scaleMax, 0])
-            .range([vis.height, 0]);
 
         //Define the Axes
         vis.xAxis = d3.axisTop(vis.xScale);
@@ -66,14 +100,55 @@ class Scatterplot {
             .attr('class', 'axis y-axis')
             .call(vis.yAxis);
 
+            /*
+
+        vis.data.objects.counties.geometries.forEach(d => {
+            if(vis.categories[1] == "urban_rural_status"){
+                console.log("cy", vis.yScale(d.properties[vis.categories[1]]) + ( vis.yScale.bandwidth() / 2));
+            }
+            else{
+                console.log("val", d.properties[vis.categories[1]]);
+                console.log("cy", vis.yScale(d.properties[vis.categories[1]]));
+
+            }
+
+            if(vis.categories[0] == "urban_rural_status"){
+                console.log("cx", vis.xScale(d.properties[vis.categories[0]]) + ( vis.xScale.bandwidth() / 2));
+            }
+            else{
+                console.log("cx", vis.xScale(d.properties[vis.categories[0]]));
+            }
+        });
+        */
+
         //Plot the Data on the chart
         vis.chart.selectAll('circle')
             .data(vis.data.objects.counties.geometries)
         .join('circle')
-            .attr('fill', 'black')
+            .attr('fill', d =>{
+                if(d.properties[vis.categories[0]] != -1 && d.properties[vis.categories[1]] != -1){
+                    return 'black';
+                }
+                else{
+                    return 'none';
+                }
+            })
             .attr('r', 3)
-            .attr('cy', (d) => vis.yScale(d.properties.attr2) ) 
-            .attr('cx',(d) =>  vis.xScale(d.properties.attr1) );
+            .attr('cy', (d) => {
+                if(vis.categories[1] == "urban_rural_status"){
+                    return (vis.yScale(d.properties[vis.categories[1]]) + ( vis.yScale.bandwidth() / 2));
+                }
+                else{
+                    return vis.yScale(d.properties[vis.categories[1]]);
+
+                }}) 
+            .attr('cx', (d) =>  {
+                if(vis.categories[0] == "urban_rural_status"){
+                    return (vis.xScale(d.properties[vis.categories[0]]) + ( vis.xScale.bandwidth() / 2));
+                }
+                else{
+                    return vis.xScale(d.properties[vis.categories[0]]);
+                }});
 
     }
 

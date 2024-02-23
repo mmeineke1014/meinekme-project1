@@ -1,5 +1,5 @@
 class MapView {
-    constructor(_config, _data, _DataID ){
+    constructor(_config, _data, _DataID, _colors ){
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 1000,
@@ -9,6 +9,7 @@ class MapView {
 
         this.data = _data;
         this.category = _DataID;
+        this.colors = _colors;
 
         this.initVis();
     }
@@ -37,11 +38,23 @@ class MapView {
         vis.projection = d3.geoAlbersUsa()
                 .translate([vis.width / 2, vis.height / 2])
                 .scale(vis.width);
-    
-        vis.colorScale = d3.scaleLinear()
-          .domain(d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.category]))
-            .range(['#cfe2f2', '#0d306b'])
-            .interpolate(d3.interpolateHcl);
+
+        const extent = d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.category]);
+        console.log(extent);
+
+        if(vis.category == "urban_rural_status"){
+          vis.colorScale = d3.scaleOrdinal()
+                                .domain(["Rural", "Suburban", "Small City", "Urban"])
+                                .range(vis.colors);
+        }
+        else{
+          vis.colorScale = d3.scaleLinear()
+                                .domain(extent)
+                                .range(vis.colors)
+                                .interpolate(d3.interpolateHcl);
+        }
+
+
     
         vis.path = d3.geoPath()
                 .projection(vis.projection);
@@ -61,7 +74,7 @@ class MapView {
                     .attr("d", vis.path)
                     // .attr("class", "county-boundary")
                     .attr('fill', d => {
-                          if (d[this.category]) {
+                          if (d.properties[vis.category] != -1) {
                             return vis.colorScale(d.properties[this.category]);
                           } else {
                             return 'url(#lightstripe)';

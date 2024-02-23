@@ -1,6 +1,42 @@
 console.log("Enter Main")
 let data, correlationGraph, distribution_1, distribution_2, map_1, map_2
 
+let getColors = (attribute) =>{
+    let colors = new Object;
+
+    if(["percent_inactive", "percent_smoking", "percent_high_blood_pressure", "percent_coronary_heart_disease", 
+        "percent_stroke", "percent_high_cholesterol"].includes(attribute)){
+        colors.attr1 = ["#f7dfe5", "#c10032"];
+        colors.attr2 = ["#f7dfef", "#c1007e"]
+    }
+    else if(["number_of_hospitals", "number_of_primary_care_physicians", "percent_no_heath_insurance"].includes(attribute)){
+        colors.attr1 = ["#f7f2df", "#c19500"];
+        colors.attr2 = ["#f7eedf", "#c17400"];
+    }
+    else if(["poverty_perc", "median_household_income", "education_less_than_high_school_percent",
+             "elderly_percentage"].includes(attribute)){
+        colors.attr1 = ["#e7f1f6", "#3e91b7"];
+        colors.attr2 = ["#e7ebf6", "#3e5fb7"];            
+    }
+    else if(["air_quality", "park_access"].includes(attribute)){
+        colors.attr1 = ["#e6f5e6", "#3ab03a"];
+        colors.attr2 = ["#f0f5df", "#89b300"];
+    }
+    else{
+        colors.attr1 = ["#D1CF79", "#D1927A", "#79D1C2", "#A079D1"];
+        colors.attr2 = ["#D1CF79", "#D1927A", "#79D1C2", "#A079D1"];
+    }
+
+    return colors;
+};
+
+let setData = (geoData, attribute1, attribute2) => {
+    geoData.objects.counties.geometries.forEach(d =>{
+        if(d.properties[attribute1] != -1){d.properties.attr1 = d.properties[attribute1];}
+        if(d.properties[attribute2] != -1){d.properties.attr2 = d.properties[attribute2];}
+    });
+};
+
 Promise.all(
     [
         d3.csv('data/national_health_data.csv'),
@@ -8,6 +44,9 @@ Promise.all(
     ]).then( data => {
         const countyData = data[0];
         const geoData = data[1];
+
+        let attribute1 = "park_access";
+        let attribute2 = "urban_rural_status";
 
         console.log("DATA READ");
 
@@ -31,10 +70,7 @@ Promise.all(
                 d.properties.percent_coronary_heart_disease = +countyData[i].percent_coronary_heart_disease;
                 d.properties.percent_stroke = +countyData[i].percent_stroke;
                 d.properties.percent_high_cholesterol = +countyData[i].percent_high_cholesterol;
-
-
-                if(d.properties.percent_smoking != -1){d.properties.attr1 = d.properties.percent_smoking;}
-                if(d.properties.elderly_percentage != -1){d.properties.attr2 = d.properties.elderly_percentage;}
+                d.properties.urban_rural_status = countyData[i].urban_rural_status;
               }
         
             }
@@ -42,36 +78,39 @@ Promise.all(
 
         console.log(geoData);
 
+        let color1 = getColors(attribute1);
+        let color2 = getColors(attribute2);
+
         //DECLARE GRAPHS
         correlationGraph = new Scatterplot({
             'parentElement': '#correlation',
-            'containerHeight': 280,
-            'containerWidth': 280
-        }, geoData);
+            'containerHeight': 300,
+            'containerWidth': 300
+        }, geoData, [attribute1, attribute2]);
 
         distribution_1 = new Histogram({
             'parentElement': '#distribution_1',
-            'containerHeight': 280,
+            'containerHeight': 300,
             'containerWidth': 500
-        }, geoData, "attr1");
+        }, geoData, attribute1, color1.attr1[1]);
 
         distribution_2 = new Histogram({
             'parentElement': '#distribution_2',
-            'containerHeight': 280,
+            'containerHeight': 300,
             'containerWidth': 500
-        }, geoData, "attr2");
+        }, geoData, attribute2, color2.attr2[1]);
 
         map_1 = new MapView({
             'parentElement': '#map_1',
             'containerHeight': 400,
             'containerWidth': 650
-        }, geoData, "attr1");
+        }, geoData, attribute1, color1.attr1);
 
         map_2 = new MapView({
             'parentElement': '#map_2',
             'containerHeight': 400,
             'containerWidth': 650
-        }, geoData, "attr2");
+        }, geoData, attribute2, color2.attr2);
 
 
     }).catch(error => {
