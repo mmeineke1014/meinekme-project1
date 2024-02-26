@@ -39,60 +39,60 @@ class MapView {
                 .translate([vis.width / 2, vis.height / 2])
                 .scale(vis.width);
 
-        const extent = d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.category]);
-        console.log(extent);
-
-        if(vis.category == "urban_rural_status"){
-          vis.colorScale = d3.scaleOrdinal()
-                                .domain(["Rural", "Suburban", "Small City", "Urban"])
-                                .range(vis.colors);
-        }
-        else{
-          vis.colorScale = d3.scaleLinear()
-                                .domain(extent)
-                                .range(vis.colors)
-                                .interpolate(d3.interpolateHcl);
-        }
-
-
-    
-        vis.path = d3.geoPath()
-                .projection(vis.projection);
-
-                vis.g = vis.svg.append("g")
-                .attr('class', 'center-container center-items us-state')
-                .attr('transform', 'translate('+vis.config.margin.left+','+vis.config.margin.top+')')
-                .attr('width', vis.width + vis.config.margin.left + vis.config.margin.right)
-                .attr('height', vis.height + vis.config.margin.top + vis.config.margin.bottom)
-    
-    
-        vis.counties = vis.g.append("g")
-                    .attr("id", "counties")
-                    .selectAll("path")
-                    .data(topojson.feature(vis.data, vis.data.objects.counties).features)
-                    .enter().append("path")
-                    .attr("d", vis.path)
-                    // .attr("class", "county-boundary")
-                    .attr('fill', d => {
-                          if (d.properties[vis.category] != -1) {
-                            return vis.colorScale(d.properties[this.category]);
-                          } else {
-                            return 'url(#lightstripe)';
-                          }
-                        });
-
-    
-        vis.g.append("path")
-                    .datum(topojson.mesh(vis.data, vis.data.objects.states, function(a, b) { return a !== b; }))
-                    .attr("id", "state-borders")
-                    .attr("d", vis.path);
-
-
+      vis.updateVis();
     }
 
 
     updateVis(){
-        this.renderVis();
+      let vis = this;
+
+      const extent = d3.extent(vis.data.objects.counties.geometries, d => d.properties[this.category]);
+      console.log(extent);
+
+      if(vis.category == "urban_rural_status"){
+        vis.colorScale = d3.scaleOrdinal()
+                              .domain(["Rural", "Suburban", "Small City", "Urban"])
+                              .range(vis.colors);
+      }
+      else{
+        vis.colorScale = d3.scaleLinear()
+                              .domain(extent)
+                              .range(vis.colors)
+                              .interpolate(d3.interpolateHcl);
+      }
+
+
+  
+      vis.path = d3.geoPath()
+              .projection(vis.projection);
+
+              vis.g = vis.svg.append("g")
+              .attr('class', 'center-container center-items us-state')
+              .attr('transform', 'translate('+vis.config.margin.left+','+vis.config.margin.top+')')
+              .attr('width', vis.width + vis.config.margin.left + vis.config.margin.right)
+              .attr('height', vis.height + vis.config.margin.top + vis.config.margin.bottom)
+  
+  
+      vis.counties = vis.g.append("g")
+                  .attr("id", "counties")
+                  .selectAll("path")
+                  .data(topojson.feature(vis.data, vis.data.objects.counties).features)
+                  .enter().append("path")
+                  .attr("d", vis.path)
+                  // .attr("class", "county-boundary")
+                  .attr('fill', d => {
+                        if (d.properties[vis.category] != -1) {
+                          return vis.colorScale(d.properties[this.category]);
+                        } else {
+                          return 'url(#lightstripe)';
+                        }
+                      });
+
+  
+      vis.g.append("path")
+                  .datum(topojson.mesh(vis.data, vis.data.objects.states, function(a, b) { return a !== b; }))
+                  .attr("id", "state-borders")
+                  .attr("d", vis.path);
     }
 
     renderVis(){

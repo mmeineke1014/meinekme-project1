@@ -4,7 +4,7 @@ class Scatterplot {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 750,
             containerHeight: _config.containerHeight || 500,
-            margin: {top: 40, right: 50, bottom: 10, left: 50}  
+            margin: {top: 10, right: 50, bottom: 40, left: 50}  
         }
 
         this.data = _data;
@@ -33,9 +33,15 @@ class Scatterplot {
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left}, ${vis.config.margin.top})`);
 
+        vis.updateVis();
 
-        //Define the graph scales
+    }
 
+
+    updateVis(){
+        let vis = this;
+        
+        //Define the graph scaless
         //get the Max and Min values for the x and y data
         if(vis.categories.includes("urban_rural_status")){
             if(vis.categories[0] == "urban_rural_status"){
@@ -66,8 +72,8 @@ class Scatterplot {
             }
         }
         else{
-            const xMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr1);
-            const yMax = d3.max(vis.data.objects.counties.geometries, d => d.properties.attr2);            
+            const xMax = d3.max(vis.data.objects.counties.geometries, d => d.properties[vis.categories[0]]);
+            const yMax = d3.max(vis.data.objects.counties.geometries, d => d.properties[vis.categories[1]]);            
 
             let scaleMax = 100;
 
@@ -84,21 +90,40 @@ class Scatterplot {
     
             vis.yScale = d3.scaleLinear()
                 .domain([scaleMax, 0])
-                .range([vis.height, 0]);
+                .range([0, vis.height]);
         }
 
         //Define the Axes
-        vis.xAxis = d3.axisTop(vis.xScale);
+        vis.xAxis = d3.axisBottom(vis.xScale);
         vis.yAxis = d3.axisLeft(vis.yScale);
 
         //Draw the Axes
         vis.xAxisGroup = vis.chart.append('g')
-            .attr('class', 'axis x-axis') 
+            .attr('class', 'axis x-axis')
+            .attr("transform", "translate(0," + vis.height + ")") 
             .call(vis.xAxis);
 
         vis.yAxisGroup = vis.chart.append('g')
             .attr('class', 'axis y-axis')
             .call(vis.yAxis);
+
+        
+        // Label the Axes
+        vis.xAxisLabel = vis.chart.append('text')
+            .attr('class', 'x label')
+            .attr("text-anchor", "end")
+            .attr("x", vis.config.containerWidth)
+            .attr("y", vis.config.containerHeight - 6)
+            .text(vis.categories[0]);
+
+        vis.yAxisLabel = vis.chart.append('text')
+            .attr("class", "y label")
+            .attr("text-anchor", "center")
+            .attr("y", 6)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text(vis.categories[1]);
+
 
             /*
 
@@ -150,11 +175,6 @@ class Scatterplot {
                     return vis.xScale(d.properties[vis.categories[0]]);
                 }});
 
-    }
-
-
-    updateVis(){
-        this.renderVis();
     }
 
     renderVis(){

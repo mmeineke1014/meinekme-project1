@@ -1,5 +1,5 @@
 console.log("Enter Main")
-let data, correlationGraph, distribution_1, distribution_2, map_1, map_2
+let data, correlationGraph, distribution_1, distribution_2, map_1, map_2, attribute1, attribute2, color1, color2
 
 let getColors = (attribute) =>{
     let colors = new Object;
@@ -45,8 +45,10 @@ Promise.all(
         const countyData = data[0];
         const geoData = data[1];
 
-        let attribute1 = "park_access";
-        let attribute2 = "urban_rural_status";
+        attribute1 = document.getElementById("Attr1Choice").value;
+        attribute2 = document.getElementById("Attr2Choice").value;
+
+        console.log(attribute1, attribute2);
 
         console.log("DATA READ");
 
@@ -78,14 +80,14 @@ Promise.all(
 
         console.log(geoData);
 
-        let color1 = getColors(attribute1);
-        let color2 = getColors(attribute2);
+        color1 = getColors(attribute1);
+        color2 = getColors(attribute2);
 
         //DECLARE GRAPHS
         correlationGraph = new Scatterplot({
             'parentElement': '#correlation',
             'containerHeight': 300,
-            'containerWidth': 300
+            'containerWidth': 350
         }, geoData, [attribute1, attribute2]);
 
         distribution_1 = new Histogram({
@@ -114,9 +116,54 @@ Promise.all(
 
 
     }).catch(error => {
-        console.log(error);
+        console.log(error);  
     });
 
+
+    document.getElementById("Attr1Choice").addEventListener("change", onAttr1Change);
+    document.getElementById("Attr2Choice").addEventListener("change", onAttr2Change);
+
+    function onAttr1Change(){
+        console.log("ATTRIBUTE 1 EVENT TRIGGERED");
+        //update the attribute and color values
+        attribute1 = document.getElementById("Attr1Choice").value;
+        color1 = getColors(attribute1);
+
+        //Update the Scatterplot
+        correlationGraph.categories = [attribute1, attribute2];
+        correlationGraph.updateVis();
+
+        //Update the Histogram
+        distribution_1.category = attribute1;
+        distribution_1.color = color1.attr1[1];
+        distribution_1.updateVis();
+
+        //Update the map
+        map_1.category = attribute1;
+        map_1.colors = color1.attr1;
+        map_1.updateVis();
+    };
+
+    function onAttr2Change(){
+        console.log("ATTRIBUTE 2 EVENT TRIGGERED");
+
+        attribute2 = document.getElementById("Attr2Choice").value;
+        color2 = getColors(attribute2);
+
+        //Update the Scatterplot
+        correlationGraph.categories = [attribute1, attribute2];
+        correlationGraph.updateVis();
+
+        //Update the Histogram
+        distribution_2.category = attribute2;
+        distribution_2.color = color2.attr2[1];
+        distribution_2.updateVis();
+
+        //Update the map
+        map_2.category = attribute2;
+        map_2.colors = color2.attr2;
+        map_2.updateVis();
+    };
 /*
 d3.csv('data/national_health_data.csv')
     .then( _data => {

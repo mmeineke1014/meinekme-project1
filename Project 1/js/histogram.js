@@ -4,7 +4,7 @@ class Histogram {
             parentElement: _config.parentElement,
             containerWidth: _config.containerWidth || 750,
             containerHeight: _config.containerHeight || 500,
-            margin: {top: 40, right: 50, bottom: 10, left: 50}  
+            margin: {top: 10, right: 50, bottom: 40, left: 50}  
         }
 
         this.data = _data;
@@ -32,6 +32,13 @@ class Histogram {
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left}, ${vis.config.margin.top})`);
 
+        vis.updateVis();
+    }
+
+
+    updateVis(){
+        let vis = this;
+
         //Define the graph scales
         let bands = this.calcBars();
         let countMax = d3.max(vis.data.histo, d => d.count);
@@ -39,24 +46,34 @@ class Histogram {
 
         vis.xScale = d3.scaleBand()
                             .domain(bands)
-                            .range([0, vis.width])
+                            .range([3, vis.width])
                             .paddingInner(0.075);
 
         vis.yScale = d3.scaleLinear()
                             .domain([0, countMax + 5 ])
-                            .range([vis.height, 0]);
+                            .range([vis.height, 0]);       
 
 
         //Create the graph axes
         //Define the Axes
-        vis.xAxis = d3.axisTop(vis.xScale);
+        vis.xAxis = d3.axisBottom(vis.xScale);
         vis.yAxis = d3.axisLeft(vis.yScale);
-        
+
         //Draw the Axes
+        /*
         vis.xAxisGroup = vis.chart.append('g')
             .attr('class', 'axis x-axis') 
             .call(vis.xAxis);
+
+        vis.yAxisGroup = vis.chart.append('g')
+            .attr('class', 'axis y-axis')
+            .call(vis.yAxis)*/
         
+        vis.xAxisGroup = vis.chart.append('g')
+            .attr('class', 'axis x-axis')
+            .attr("transform", "translate(0," + vis.height + ")")
+            .call(vis.xAxis);
+
         vis.yAxisGroup = vis.chart.append('g')
             .attr('class', 'axis y-axis')
             .call(vis.yAxis);
@@ -79,11 +96,6 @@ class Histogram {
                 .attr('height', d => vis.height - vis.yScale(d.count))
                 .attr('y', d => vis.yScale(d.count))
                 .attr('x', d => vis.xScale(d.band));
-    }
-
-
-    updateVis(){
-        this.renderVis();
     }
 
     renderVis(){
@@ -145,7 +157,7 @@ class Histogram {
                 else if(x < buckets[11]){this.data.histo[11].count++;}
                 else if(x < buckets[12]){this.data.histo[12].count++;}
                 else if(x < buckets[13]){this.data.histo[13].count++;}
-                else if(x < buckets[14]){this.data.histo[14].count++; console.log(x);}
+                else if(x < buckets[14]){this.data.histo[14].count++;}
             });
         }
 
