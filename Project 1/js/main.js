@@ -15,7 +15,7 @@ let getColors = (attribute) =>{
     }
     else if(["poverty_perc", "median_household_income", "education_less_than_high_school_percent",
              "elderly_percentage"].includes(attribute)){
-        colors.attr1 = ["#e7f1f6", "#3e91b7"];
+        colors.attr1 = ["#dfeef3", "#00789c"];
         colors.attr2 = ["#e7ebf6", "#3e5fb7"];            
     }
     else if(["air_quality", "park_access"].includes(attribute)){
@@ -164,72 +164,3 @@ Promise.all(
         map_2.colors = color2.attr2;
         map_2.updateVis();
     };
-/*
-d3.csv('data/national_health_data.csv')
-    .then( _data => {
-        data = _data;
-        console.log("Data Read");
-        console.log(data);
-
-        //PROCESS DATA
-        data.forEach(d => {
-            //Convert strings to numbers
-            d.poverty_perc = +d.poverty_perc;
-            d.median_household_income = +d.median_household_income;
-            d.education_less_than_high_school_percent = +d.education_less_than_high_school_percent;
-            d.air_quality = +d.air_quality;
-            d.park_access = +d.park_access;
-            d.percent_inactive = +d.percent_inactive;
-            d.percent_smoking = +d.percent_smoking;
-            d.elderly_percentage = +d.elderly_percentage;
-            d.number_of_hospitals = +d.number_of_hospitals;
-            d.number_of_primary_care_physicians = +d.number_of_primary_care_physicians;
-            d.percent_no_heath_insurance = +d.percent_no_heath_insurance;
-            d.percent_high_blood_pressure = +d.percent_high_blood_pressure;
-            d.percent_coronary_heart_disease = +d.percent_coronary_heart_disease;
-            d.percent_stroke = +d.percent_stroke;
-            d.percent_high_cholesterol = +d.percent_high_cholesterol;
-
-            if(d.percent_smoking != -1){d.attr1 = d.percent_smoking;}
-            if(d.elderly_percentage != -1){d.attr2 = d.elderly_percentage;}
-        });
-
-
-        //DECLARE GRAPHS
-        correlationGraph = new Scatterplot({
-            'parentElement': '#correlation',
-            'containerHeight': 500,
-            'containerWidth': 500
-        }, data);
-
-        distribution_1 = new Histogram({
-            'parentElement': '#distribution_1',
-            'containerHeight': 300,
-            'containerWidth': 625
-        }, data, "attr1");
-
-        distribution_2 = new Histogram({
-            'parentElement': '#distribution_2',
-            'containerHeight': 300,
-            'containerWidth': 625
-        }, data, "attr2");
-
-        map_1 = new MapView({
-            'parentElement': '#distribution_2',
-            'containerHeight': 450,
-            'containerWidth': 600
-        }, data, "attr1");
-
-        map_2 = new MapView({
-            'parentElement': '#distribution_2',
-            'containerHeight': 450,
-            'containerWidth': 600
-        }, data, "attr2");
-
-    }
-    )
-    .catch(error =>{
-        console.log(error);
-    });
-
-    */

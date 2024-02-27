@@ -5,6 +5,7 @@ class MapView {
             containerWidth: _config.containerWidth || 1000,
             containerHeight: _config.containerHeight || 500,
             margin: _config.margin || {top: 10, right: 10, bottom: 10, left: 10},
+            tooltipPadding: 10,
         }
 
         this.data = _data;
@@ -87,7 +88,23 @@ class MapView {
                           return 'url(#lightstripe)';
                         }
                       });
-
+      vis.counties
+                .on('mousemove', (event, d) => {
+                  console.log(d);
+                  console.log(event);
+                  const val = d.properties[vis.category] != -1 ? `${d.properties[vis.category]}` : "No Data Available";
+                    d3.select('#tooltip')
+                      .style('display', 'block')
+                      .style('left', (event.pageX + vis.config.tooltipPadding) + 'px')   
+                      .style('top', (event.pageY + vis.config.tooltipPadding) + 'px')
+                      .html(`
+                        <div class="tooltip-title">${d.properties.name}</div>
+                        <div>${vis.category}: ${val}</div>
+                      `);
+                  })
+                  .on('mouseleave', () => {
+                    d3.select('#tooltip').style('display', 'none');
+                  });
   
       vis.g.append("path")
                   .datum(topojson.mesh(vis.data, vis.data.objects.states, function(a, b) { return a !== b; }))
